@@ -1,3 +1,12 @@
+"""
+Created on Wed Dec  9 08:25:12 2020
+
+@author: Carlos Natalino, Yuchuan Fan
+
+Code for Paper: Y. Fan, A. Udalcovs, X. Pang, C. Natalino, M. Furdek, S. Popov, and O. Ozolins, 
+"Fast signal quality monitoring for coherent communications enabled by CNN-based EVM estimation," 
+J. Opt. Commun. Netw. vol. 13, pp. B12-B20, April 2021.
+"""
 import os
 import warnings
 
@@ -66,6 +75,10 @@ for scenario in scenarios:
             evm_truth_vector = np.tile(evm_truth[scenario], number_figures[scenario])
             ber_truth_vector = np.tile(ber_truth[scenario], number_figures[scenario])
             del mat_contents 
+
+
+points_per_symbol = 100 # choose different dataset 
+
 #############################################
 dx = 40
 dx1 = 60
@@ -102,16 +115,6 @@ for id_scenario, scenario in enumerate(scenarios):
 
     index_full = id_scenario * 100
     
-    clazz = 0
-    if '64QAM' in scenario:
-        clazz = 3
-    elif '16QAM' in scenario:
-        clazz = 2
-    elif '4QAM' in scenario:
-        clazz = 1
-    else:
-        print('error')
-    
     index_train = id_scenario * 50
     X_train[index_train:index_train + 50, :, :] = X[index_full:index_full + 50, :, :]
     Y_train[index_train:index_train + 50] = evm_truth[scenario]
@@ -135,10 +138,129 @@ if not os.path.isdir(results_folder):
     os.makedirs(results_folder)
     print('created folder', results_folder)
 
-#####################CNN regression model#####################################
+# Here are the CNN structures list in Tabel 1 of the paper 
+
+#####################CNN regression model Structure 1####################
+#input_0 = Input(shape=(X.shape[1], X.shape[2], 1))
+#conv_0 = Conv2D(2, kernel_size=(3, 3), activation='relu')(input_0)
+#pool_0 = MaxPooling2D(pool_size=(2, 2))(conv_0)
+#
+#conv_1 = Conv2D(2, kernel_size=(3, 3), activation='relu')(pool_0)
+#pool_1 = MaxPooling2D(pool_size=(2, 2))(conv_1)
+#########################################################################
+
+#####################CNN regression model Structure 2####################
+#input_0 = Input(shape=(X.shape[1], X.shape[2], 1))
+#conv_0 = Conv2D(4, kernel_size=(3, 3), activation='relu')(input_0)
+#pool_0 = MaxPooling2D(pool_size=(2, 2))(conv_0)
+#
+#conv_1 = Conv2D(2, kernel_size=(3, 3), activation='relu')(pool_0)
+#pool_1 = MaxPooling2D(pool_size=(2, 2))(conv_1)
+#########################################################################
+
+#####################CNN regression model Structure 3####################
+#input_0 = Input(shape=(X.shape[1], X.shape[2], 1))
+#conv_0 = Conv2D(8, kernel_size=(3, 3), activation='relu')(input_0)
+#pool_0 = MaxPooling2D(pool_size=(2, 2))(conv_0)
+#
+#conv_1 = Conv2D(16, kernel_size=(3, 3), activation='relu')(pool_0)
+#pool_1 = MaxPooling2D(pool_size=(2, 2))(conv_1)
+#
+#conv_2 = Conv2D(8, kernel_size=(3, 3), activation='relu')(pool_1)
+#pool_2 = MaxPooling2D(pool_size=(2, 2))(conv_2)
+#########################################################################
+
+#####################CNN regression model Structure 4####################
+#input_0 = Input(shape=(X.shape[1], X.shape[2], 1))
+#conv_0 = Conv2D(8, kernel_size=(3, 3), activation='relu')(input_0)
+#pool_0 = MaxPooling2D(pool_size=(2, 2))(conv_0)
+#
+#conv_1 = Conv2D(16, kernel_size=(3, 3), activation='relu')(pool_0)
+#pool_1 = MaxPooling2D(pool_size=(2, 2))(conv_1)
+#
+#conv_2 = Conv2D(16, kernel_size=(3, 3), activation='relu')(pool_1)
+#pool_2 = MaxPooling2D(pool_size=(2, 2))(conv_2)
+#
+#conv_3 = Conv2D(8, kernel_size=(3, 3), activation='relu')(pool_2)
+#pool_3 = MaxPooling2D(pool_size=(2, 2))(conv_3)
+#########################################################################
+
+#####################CNN regression model Structure 5####################
+#input_0 = Input(shape=(X.shape[1], X.shape[2], 1))
+#conv_0 = Conv2D(16, kernel_size=(3, 3), activation='relu')(input_0)
+#pool_0 = MaxPooling2D(pool_size=(2, 2))(conv_0)
+#
+#conv_1 = Conv2D(16, kernel_size=(3, 3), activation='relu')(pool_0)
+#pool_1 = MaxPooling2D(pool_size=(2, 2))(conv_1)
+#
+#conv_2 = Conv2D(16, kernel_size=(3, 3), activation='relu')(pool_1)
+#pool_2 = MaxPooling2D(pool_size=(2, 2))(conv_2)
+#
+#conv_3 = Conv2D(8, kernel_size=(3, 3), activation='relu')(pool_2)
+#pool_3 = MaxPooling2D(pool_size=(2, 2))(conv_3)
+#########################################################################
+
+#####################CNN regression model Structure 6####################
+#input_0 = Input(shape=(X.shape[1], X.shape[2], 1))
+#conv_0 = Conv2D(8, kernel_size=(5, 5), activation='relu')(input_0)
+#pool_0 = MaxPooling2D(pool_size=(2, 2))(conv_0)
+#
+#conv_1 = Conv2D(16, kernel_size=(5, 5), activation='relu')(pool_0)
+#pool_1 = MaxPooling2D(pool_size=(2, 2))(conv_1)
+#
+#conv_2 = Conv2D(16, kernel_size=(5, 5), activation='relu')(pool_1)
+#pool_2 = MaxPooling2D(pool_size=(2, 2))(conv_2)
+#
+#conv_3 = Conv2D(8, kernel_size=(5, 5), activation='relu')(pool_2)
+#pool_3 = MaxPooling2D(pool_size=(2, 2))(conv_3)
+#
+#conv_4 = Conv2D(8, kernel_size=(5, 5), activation='relu')(pool_3)
+#pool_4 = MaxPooling2D(pool_size=(2, 2))(conv_4)
+#########################################################################
+
+#####################CNN regression model Structure 7####################
+
+#input_0 = Input(shape=(X.shape[1], X.shape[2], 1))
+#conv_0 = Conv2D(8, kernel_size=(3, 3), activation='relu')(input_0)
+#pool_0 = MaxPooling2D(pool_size=(2, 2))(conv_0)
+#
+#conv_1 = Conv2D(16, kernel_size=(3, 3), activation='relu')(pool_0)
+#pool_1 = MaxPooling2D(pool_size=(2, 2))(conv_1)
+#
+#conv_2 = Conv2D(16, kernel_size=(3, 3), activation='relu')(pool_1)
+#pool_2 = MaxPooling2D(pool_size=(2, 2))(conv_2)
+#
+#conv_3 = Conv2D(8, kernel_size=(3, 3), activation='relu')(pool_2)
+#pool_3 = MaxPooling2D(pool_size=(2, 2))(conv_3)
+#
+#conv_4 = Conv2D(8, kernel_size=(3, 3), activation='relu')(pool_3)
+#pool_4 = MaxPooling2D(pool_size=(2, 2))(conv_4)
+#########################################################################
+
+#####################CNN regression model Structure 8####################
+
+#input_0 = Input(shape=(X.shape[1], X.shape[2], 1))
+#conv_0 = Conv2D(16, kernel_size=(3, 3), activation='relu')(input_0)
+#pool_0 = MaxPooling2D(pool_size=(2, 2))(conv_0)
+#
+#conv_1 = Conv2D(16, kernel_size=(3, 3), activation='relu')(pool_0)
+#pool_1 = MaxPooling2D(pool_size=(2, 2))(conv_1)
+#
+#conv_2 = Conv2D(16, kernel_size=(3, 3), activation='relu')(pool_1)
+#pool_2 = MaxPooling2D(pool_size=(2, 2))(conv_2)
+#
+#conv_3 = Conv2D(8, kernel_size=(3, 3), activation='relu')(pool_2)
+#pool_3 = MaxPooling2D(pool_size=(2, 2))(conv_3)
+#
+#conv_4 = Conv2D(8, kernel_size=(3, 3), activation='relu')(pool_3)
+#pool_4 = MaxPooling2D(pool_size=(2, 2))(conv_4)
+#########################################################################
+
+
+#####################CNN regression model Structure 4####################
 
 input_0 = Input(shape=(X.shape[1], X.shape[2], 1))
-conv_0 = Conv2D(32, kernel_size=(3, 3), activation='relu')(input_0)
+conv_0 = Conv2D(8, kernel_size=(3, 3), activation='relu')(input_0)
 pool_0 = MaxPooling2D(pool_size=(2, 2))(conv_0)
 
 conv_1 = Conv2D(16, kernel_size=(3, 3), activation='relu')(pool_0)
@@ -149,6 +271,8 @@ pool_2 = MaxPooling2D(pool_size=(2, 2))(conv_2)
 
 conv_3 = Conv2D(8, kernel_size=(3, 3), activation='relu')(pool_2)
 pool_3 = MaxPooling2D(pool_size=(2, 2))(conv_3)
+#########################################################################
+
 
 flat_0 = Flatten()(pool_3)
 dense_0 = Dense(500, activation='relu')(flat_0)
