@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Wed Dec  9 08:25:12 2020
 
@@ -8,86 +7,45 @@ Code for Paper: Y. Fan, A. Udalcovs, X. Pang, C. Natalino, M. Furdek, S. Popov, 
 "Fast signal quality monitoring for coherent communications enabled by CNN-based EVM estimation," 
 J. Opt. Commun. Netw. vol. 13, pp. B12-B20, April 2021.
 """
+import os
 import warnings
-warnings.filterwarnings("ignore")
 
 import imageio
-import keras
 import numpy as np
 
 import scipy.io as sio
-from keras.layers import Dense
 
-from sklearn.metrics import mean_absolute_error
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import mean_squared_log_error
-
-from keras.layers import Input, Conv2D, MaxPooling2D, Flatten
-from keras.models import Model
-from keras import optimizers, metrics
-from keras.utils import plot_model, np_utils
-from keras.optimizers import Adam
-import os
+from tensorflow.keras.layers import Dense, Input, Conv2D, MaxPooling2D, Flatten
+from tensorflow.keras.models import Model
+from tensorflow.keras import optimizers
+from sklearn.metrics import mean_absolute_error, mean_squared_error, mean_squared_log_error
 
 import matplotlib.pyplot as plt
 
-import tensorflow as tf
+warnings.filterwarnings("ignore")
 
 seed = 7  
 np.random.seed(seed)  
-folder = 'D:/DataSet'
+folder = '2020_JOCN_constellation_dataset'
 
-scenarios = []
-scenarios.append('4QAM_OSNR12dB')
-scenarios.append('4QAM_OSNR14dB')
-scenarios.append('4QAM_OSNR16dB')
-scenarios.append('4QAM_OSNR18dB')
-scenarios.append('4QAM_OSNR20dB')
-scenarios.append('4QAM_OSNR22dB')
-scenarios.append('4QAM_OSNR24dB')
-scenarios.append('4QAM_OSNR26dB')
-scenarios.append('4QAM_OSNR28dB')
-scenarios.append('4QAM_OSNR30dB')
+scenarios = ['4QAM_OSNR12dB', '4QAM_OSNR14dB', '4QAM_OSNR16dB', '4QAM_OSNR18dB', '4QAM_OSNR20dB', '4QAM_OSNR22dB',
+             '4QAM_OSNR24dB', '4QAM_OSNR26dB', '4QAM_OSNR28dB', '4QAM_OSNR30dB',
+             '16QAM_OSNR20dB', '16QAM_OSNR22dB',
+             '16QAM_OSNR24dB', '16QAM_OSNR26dB', '16QAM_OSNR28dB', '16QAM_OSNR30dB', '16QAM_OSNR32dB', '16QAM_OSNR34dB',
+             '16QAM_OSNR36dB', '16QAM_OSNR38dB',
+             '64QAM_OSNR26dB', '64QAM_OSNR28dB', '64QAM_OSNR30dB', '64QAM_OSNR32dB',
+             '64QAM_OSNR34dB', '64QAM_OSNR36dB', '64QAM_OSNR38dB', '64QAM_OSNR40dB', '64QAM_OSNR42dB', '64QAM_OSNR44dB']
 
-scenarios.append('16QAM_OSNR20dB')
-scenarios.append('16QAM_OSNR22dB')
-scenarios.append('16QAM_OSNR24dB')
-scenarios.append('16QAM_OSNR26dB')
-scenarios.append('16QAM_OSNR28dB')
-scenarios.append('16QAM_OSNR30dB')
-scenarios.append('16QAM_OSNR32dB')
-scenarios.append('16QAM_OSNR34dB')
-scenarios.append('16QAM_OSNR36dB')
-scenarios.append('16QAM_OSNR38dB')
-
-scenarios.append('64QAM_OSNR26dB')
-scenarios.append('64QAM_OSNR28dB')
-scenarios.append('64QAM_OSNR30dB')
-scenarios.append('64QAM_OSNR32dB')
-scenarios.append('64QAM_OSNR34dB')
-scenarios.append('64QAM_OSNR36dB')
-scenarios.append('64QAM_OSNR38dB')
-scenarios.append('64QAM_OSNR40dB')
-scenarios.append('64QAM_OSNR42dB')
-scenarios.append('64QAM_OSNR44dB')
-
-
-evm_error_metrics = {}
-evm_error_metrics['mean_absolute_error'] = {}
-evm_error_metrics['mean_squared_error'] = {}
-evm_error_metrics['mean_squared_logarithmic_error'] = {}
+evm_error_metrics = {'mean_absolute_error': {}, 'mean_squared_error': {}, 'mean_squared_logarithmic_error': {}}
 evm_truth = {}
 
 
-ber_error_metrics = {}
-ber_error_metrics['mean_absolute_error'] = {}
-ber_error_metrics['mean_squared_error'] = {}
-ber_error_metrics['mean_squared_logarithmic_error'] = {}
+ber_error_metrics = {'mean_absolute_error': {}, 'mean_squared_error': {}, 'mean_squared_logarithmic_error': {}}
 ber_truth = {}
 
 number_figures = {}
 for scenario in scenarios:
-#    evm_error_metrics['diff'][scenario] = {}
+
     evm_error_metrics['mean_absolute_error'][scenario] = {}
     evm_error_metrics['mean_squared_error'][scenario] = {}
     evm_error_metrics['mean_squared_logarithmic_error'][scenario] = {}
@@ -97,12 +55,12 @@ for scenario in scenarios:
     ber_error_metrics['mean_squared_logarithmic_error'][scenario] = {}
     
     # loading the truth value
-    mat_contents = sio.loadmat(folder + 'fullTrace/' + scenario + '/OutputParams_' + scenario + '_FullTrace.mat')
+    mat_contents = sio.loadmat(os.path.join(folder, 'fullTrace', scenario, 'OutputParams_' + scenario + '_FullTrace.mat'))
     evm_truth[scenario] = mat_contents['output']['EVM_mu'][0][0]
     ber_truth[scenario] = mat_contents['output']['BERe_mu'][0][0]
     del mat_contents
     
-    for file_mat in sorted(os.listdir(folder + scenario)):
+    for file_mat in sorted(os.listdir(os.path.join(folder, scenario))):
         if file_mat.endswith('.mat'):
             names = file_mat.split('_')
             modulation = names[1]
@@ -111,7 +69,7 @@ for scenario in scenarios:
             print(points_per_symbol)
             
             # import matlab
-            mat_contents = sio.loadmat(folder + scenario + '/' + file_mat)
+            mat_contents = sio.loadmat(os.path.join(folder, scenario, file_mat))
             number_figures[scenario] = 100 #len(evm_figures)
             
             evm_truth_vector = np.tile(evm_truth[scenario], number_figures[scenario])
@@ -145,7 +103,8 @@ Y_test = np.zeros((len(scenarios) * 25))
 ################################################################
 for id_scenario, scenario in enumerate(scenarios):
     for id_figure in range(number_figures[scenario]):
-        image = imageio.imread(folder + scenario + '/Fig_'+ scenario + '_PointsPerSymb_' + str(points_per_symbol) + '_constN_' + str(id_figure + 1) + '.png.png')
+        image = imageio.imread(os.path.join(folder, scenario,
+                                            'Fig_'+ scenario + '_PointsPerSymb_' + str(points_per_symbol) + '_constN_' + str(id_figure + 1) + '.png.png'))
         shape = image.shape
         
         r, g, b = image[cut_x:shape[0]-cut_x1, cut_y+20:shape[1] - cut_y + 1, 0], image[cut_x:shape[0]-cut_x1, cut_y+20:shape[1] - cut_y + 1, 1], image[cut_x:shape[0]-cut_x1, cut_y+20:shape[1] - cut_y + 1, 2]
@@ -174,7 +133,7 @@ for id_scenario, scenario in enumerate(scenarios):
 print('done')
 
 model_folder = 'conv_classifier_regressor'
-results_folder = folder + 'results/' + model_folder
+results_folder = os.path.join(folder, 'results', model_folder)
 if not os.path.isdir(results_folder):
     os.makedirs(results_folder)
     print('created folder', results_folder)
@@ -333,22 +292,23 @@ print(shape)
 X_validation = np.reshape(X_validation, newshape=(shape[0], shape[1], shape[2], 1))
 
 print(Y_train.shape)
-history = model.fit(X_train, Y_train, batch_size=16, epochs=200, verbose=1,validation_data=(X_validation, Y_validation),shuffle=True)#,shuffle=True
+history = model.fit(X_train, Y_train, batch_size=16, epochs=200, verbose=1,
+                    validation_data=(X_validation, Y_validation), shuffle=True)
 
 
 model.save('my_model.h5')
 X_test = np.reshape(X_test, newshape=(shape[0], shape[1], shape[2], 1))
-evaluation = model.evaluate(X_test, Y_test,batch_size=20)
+evaluation = model.evaluate(X_test, Y_test, batch_size=20)
 preds = model.predict(X_test)
-print('points',points_per_symbol)
+print('points', points_per_symbol)
 print('MAX diff', max(abs(Y_test.reshape((len(Y_test),1))-preds)))
 
 plt.figure()
 plt.plot(Y_test.reshape((len(Y_test),1))-preds)
 plt.show()
-print('MAE :', mean_absolute_error(Y_test.reshape((len(Y_test),1)), preds))
-print('MSE :', mean_squared_error(Y_test.reshape((len(Y_test),1)), preds))
-print('MSLE :', mean_squared_log_error(Y_test.reshape((len(Y_test),1)), preds))
+print('MAE :', mean_absolute_error(Y_test.reshape((len(Y_test), 1)), preds))
+print('MSE :', mean_squared_error(Y_test.reshape((len(Y_test), 1)), preds))
+print('MSLE :', mean_squared_log_error(Y_test.reshape((len(Y_test), 1)), preds))
 
 ###################################################
 for key in history.history.keys():
